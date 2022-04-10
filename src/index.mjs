@@ -1,0 +1,1 @@
+export {k8sManifest, stringify} from './k8s-manifest.mjs';
