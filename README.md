@@ -1,4 +1,4 @@
-# k8s
+# k8s-manifest
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or objects.
 
 # Dependencies
