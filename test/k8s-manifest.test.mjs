@@ -1,7 +1,7 @@
 import chai, { assert } from 'chai';
 const expect = chai.expect;
 
-import {k8sManifest, k8sClientObject} from '../src/k8s-manifest.mjs';
+import {k8sManifest, k8sClientObject, objectify} from '../src/k8s-manifest.mjs';
 
 describe('k8s-manifest', () => {
 
@@ -50,8 +50,6 @@ describe('k8s-manifest', () => {
             expect(subject.apiVersion).to.equal('batch/v1');
             expect(subject.kind).to.equal('CronJob');
         })
-
-
         it('should correctly map yaml objects when supplied as configuration', () => {
             const configuration = {
                 apiVersion: 'v1',
@@ -132,6 +130,105 @@ describe('k8s-manifest', () => {
         })
     })
 
+    describe('objectify', () => {
+
+        let parsedYaml;
+        beforeEach(() => {
+            parsedYaml = {
+                apiVersion: 'v1',
+                kind: 'Pod',
+                metadata: {
+                    name: 'sample-pod'
+                },
+                spec: {
+                    containers: [{
+                        name: 'container-name',
+                        image: 'nginx',
+                        command: ['/bin/bash'],
+                        args: ['-c', 'echo "Hello"'],
+                        env: [{
+                            name: 'BITNAMI_DEBUG',
+                            value: "false"
+                        }, {
+                            name: 'MONGODB_SYSTEM_LOG_VERBOSITY',
+                            value: "0"
+                        }, {
+                            name: 'MONGODB_DISABLE_SYSTEM_LOG',
+                            value: "no"
+                        }, {
+                            name: 'MONGODB_DISABLE_JAVASCRIPT',
+                            value: "no"
+                        }, {
+                            name: 'MONGODB_ENABLE_JOURNAL',
+                            value: "yes"
+                        }, {
+                            name: 'MONGODB_ENABLE_IPV6',
+                            value: "no"
+                        }, {
+                            name: 'MONGODB_ENABLE_DIRECTORY_PER_DB',
+                            value: "no"
+                        }],
+                        envFrom: [{
+                            configMapRef: {
+                                name: 'config-map'
+                            }
+                        },{
+                            secretRef: {
+                                name: 'secret-name'
+                            }
+                        }],
+                        resources: {
+                            requests: {
+                                memory: "64Mi",
+                                cpu: "250m"
+                            },
+                            limits: {
+                                memory: "128Mi",
+                                cpu: "500m"
+                            }
+                        },
+                        ports: [{
+                            name: "liveness-port",
+                            containerPort: 8080,
+                            hostPort: 8080
+                        }],
+                        livenessProbe: {
+                            httpGet: {
+                                path: '/healthz',
+                                port: 'liveness-port'
+                            },
+                            failureThreshold: 1,
+                            periodSeconds: 10
+                        },
+                        startupProbe: {
+                            httpGet: {
+                                path: '/healthz',
+                                port: 80
+                            },
+                            failureThreshold: 30,
+                            periodSeconds: 10
+                        }
+                    }]
+                }
+            };
+        })
+
+        it('should correctly convert a k8s client object to a javascript object', () => {
+            const manifest = k8sManifest(parsedYaml);
+
+            expect(manifest.constructor.name).to.include('Pod');
+
+            const obj = objectify(manifest);
+
+            expect(typeof obj).to.equal('object');
+            expect(obj.apiVersion).to.equal(parsedYaml.apiVersion);
+            expect(obj.kind).to.equal(parsedYaml.kind);
+            expect(obj.spec.containers[0].name).not.to.equal(undefined);
+            expect(obj.spec.containers[0].name).not.to.equal(null);
+            expect(obj.spec.containers[0].name).to.equal(parsedYaml.spec.containers[0].name);
+        })
+    })
+
     describe('k8sClientObject', () => {
 
         it('should correctly map object types', () => {
@@ -158,7 +255,6 @@ describe('k8s-manifest', () => {
             expect(subject.toISOString()).to.contain('Z');
         })
     })
-
 
     describe('container mapping', () => {
         let parsedYaml;
@@ -245,8 +341,6 @@ describe('k8s-manifest', () => {
         it('should create a container array of k8s client containers', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(Array.isArray(subject.spec.containers)).to.equal(true);
             expect(subject.spec.containers[0].constructor.name).to.include('Container');
         })
@@ -254,23 +348,17 @@ describe('k8s-manifest', () => {
         it('should correctly map name', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.containers[0].name).to.include('container-name');
         })
 
         it('should correctly map image', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.containers[0].image).to.include('nginx');
         })
 
         it('should correctly map startup probe', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers)).to.equal(true);
             expect(subject.spec.containers[0].startupProbe.constructor.name).to.include('Probe');
@@ -281,8 +369,6 @@ describe('k8s-manifest', () => {
         it('should correctly map liveness probe', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(Array.isArray(subject.spec.containers)).to.equal(true);
             expect(subject.spec.containers[0].livenessProbe.constructor.name).to.include('Probe');
             expect(subject.spec.containers[0].livenessProbe.failureThreshold).to.equal(1);
@@ -291,8 +377,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map http action', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers)).to.equal(true);
             expect(subject.spec.containers[0].startupProbe.httpGet.constructor.name).to.include('HTTPGetAction');
@@ -304,8 +388,6 @@ describe('k8s-manifest', () => {
         it('should correctly map ports', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(Array.isArray(subject.spec.containers[0].ports)).to.equal(true);
             expect(subject.spec.containers[0].ports[0].name).to.equal('liveness-port');
             expect(subject.spec.containers[0].ports[0].containerPort).to.equal(8080);
@@ -314,8 +396,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map resources', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.containers[0].resources.constructor.name).to.include('ResourceRequirements');
             expect(subject.spec.containers[0].resources.requests.memory).to.equal('64Mi');
@@ -327,16 +407,12 @@ describe('k8s-manifest', () => {
         it('should correctly map command', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(Array.isArray(subject.spec.containers[0].command)).to.equal(true);
             expect(subject.spec.containers[0].command[0]).to.equal('/bin/bash');
         })
 
         it('should correctly map args', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers[0].args)).to.equal(true);
             expect(subject.spec.containers[0].args[0]).to.equal('-c');
@@ -345,8 +421,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map env', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers[0].env)).to.equal(true);
             expect(subject.spec.containers[0].env[0].constructor.name).to.include('EnvVar');
@@ -361,8 +435,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map envFrom', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers[0].envFrom)).to.equal(true);
 
@@ -413,8 +485,6 @@ describe('k8s-manifest', () => {
         it('should create a k8s client pod', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('Pod');
             expect(subject.apiVersion).to.equal('v1');
             expect(subject.kind).to.equal('Pod');
@@ -423,15 +493,11 @@ describe('k8s-manifest', () => {
         it('should create a k8s client pod spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('PodSpec');
         })
 
         it('should create a container array of k8s client containers', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.containers)).to.equal(true);
             expect(subject.spec.containers[0].constructor.name).to.include('Container');
@@ -440,24 +506,16 @@ describe('k8s-manifest', () => {
         it('should set the termination grace period', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.terminationGracePeriodSeconds).to.equal(30);
         })
 
         it('should set the scheduler name', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.serviceAccountName).to.equal('service-account-name');
         })
-
-
         it('should set the serviceAccount', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.serviceAccount).to.equal('service-account');
         })
@@ -465,15 +523,11 @@ describe('k8s-manifest', () => {
         it('should set the security context', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.securityContext.constructor.name).to.include('SecurityContext');
         })
 
         it('should set the scheduler name', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.schedulerName).to.equal('default-scheduler');
         })
@@ -481,23 +535,17 @@ describe('k8s-manifest', () => {
         it('should set the restart policy', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.restartPolicy).to.equal('Never');
         })
 
         it('should set the dnsPolicy', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.dnsPolicy).to.equal('ClusterFirst');
         })
 
         it('should set the image pull secrets', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.imagePullSecrets)).to.equal(true)
             expect(subject.spec.imagePullSecrets[0].constructor.name).to.include('LocalObjectReference');
@@ -550,8 +598,6 @@ describe('k8s-manifest', () => {
         it('should create a k8s client job', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('Job');
             expect(subject.apiVersion).to.equal('batch/v1');
             expect(subject.kind).to.equal('Job');
@@ -560,15 +606,11 @@ describe('k8s-manifest', () => {
         it('should create a job spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('JobSpec');
         })
 
         it('should correctly map pod template', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.template.constructor.name).to.include('PodTemplateSpec');
         })
@@ -576,15 +618,11 @@ describe('k8s-manifest', () => {
         it('should correctly map pod spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.template.spec.constructor.name).to.include('PodSpec');
         })
 
         it('should correctly map pod template metadata', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.template.metadata.constructor.name).to.include('ObjectMeta');
             expect(subject.spec.template.metadata.labels['controller-uid']).to.equal('50453798-481c-4381-8561-8bacf22b9444');
@@ -594,8 +632,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly set selector match expressions', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.selector.matchExpressions)).to.equal(true);
             expect(subject.spec.selector.matchExpressions[0].constructor.name).to.include('LabelSelectorRequirement');
@@ -611,15 +647,11 @@ describe('k8s-manifest', () => {
         it('should correctly set selector match labels', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.selector.matchLabels['controller-uid']).to.equal("50453798-481c-4381-8561-8bacf22b9444");
         })
 
         it('should correctly set selector', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.selector.constructor.name).to.include('LabelSelector');
         })
@@ -627,23 +659,17 @@ describe('k8s-manifest', () => {
         it('should correctly set parallelism', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.parallelism).to.equal(1);
         })
 
         it('should correctly set completions', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.completions).to.equal(1);
         })
 
         it('should correctly set backoff limit', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.backoffLimit).to.equal(6);
         })
@@ -680,8 +706,6 @@ describe('k8s-manifest', () => {
         it('should create a k8s client cron job', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('CronJob');
             expect(subject.apiVersion).to.equal('batch/v1');
             expect(subject.kind).to.equal('CronJob');
@@ -690,15 +714,11 @@ describe('k8s-manifest', () => {
         it('should create a k8s client cron job spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('CronJobSpec');
         })
 
         it('should correctly map the schedule', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.schedule).to.equal('* * * * *');
         })
@@ -706,15 +726,11 @@ describe('k8s-manifest', () => {
         it('should create a k8s client job template', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.jobTemplate.constructor.name).to.include('JobTemplateSpec');
         })
 
         it('should create a k8s client job spec', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.jobTemplate.spec.constructor.name).to.include('JobSpec');
         })
@@ -751,8 +767,6 @@ describe('k8s-manifest', () => {
         it('should create a k8s client cron job', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('CronJob');
             expect(subject.apiVersion).to.equal('batch/v1beta1');
             expect(subject.kind).to.equal('CronJob');
@@ -761,15 +775,11 @@ describe('k8s-manifest', () => {
         it('should create a k8s client cron job spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('CronJobSpec');
         })
 
         it('should correctly map the schedule', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.schedule).to.equal('* * * * *');
         })
@@ -777,15 +787,11 @@ describe('k8s-manifest', () => {
         it('should create a k8s client job template', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.jobTemplate.constructor.name).to.include('JobTemplateSpec');
         })
 
         it('should create a k8s client job spec', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.jobTemplate.spec.constructor.name).to.include('JobSpec');
         })
@@ -832,8 +838,6 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client deployment', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('Deployment');
             expect(subject.kind).to.equal('Deployment');
             expect(subject.apiVersion).to.equal('apps/v1');
@@ -842,15 +846,11 @@ describe('k8s-manifest', () => {
         it('should correctly map deployment spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('DeploymentSpec');
         })
 
         it('should correctly map deployment spec min ready seconds', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.minReadySeconds).to.equal(60);
         })
@@ -858,15 +858,11 @@ describe('k8s-manifest', () => {
         it('should correctly map deployment spec replicas', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.replicas).to.equal(3);
         })
 
         it('should correctly map deployment spec progress deadline', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.progressDeadlineSeconds).to.equal(600);
         })
@@ -874,23 +870,17 @@ describe('k8s-manifest', () => {
         it('should correctly map deployment spec revision history limit', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.revisionHistoryLimit).to.equal(10);
         })
 
         it('should correctly map deployment spec paused', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.paused).to.equal(false);
         })
 
         it('should correctly map deployment spec strategy', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.strategy.constructor.name).to.include('DeploymentStrategy');
             expect(subject.spec.strategy.type).to.equal('RollingUpdate');
@@ -902,16 +892,12 @@ describe('k8s-manifest', () => {
         it('should correctly map deployment spec selector', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.selector.constructor.name).to.include('LabelSelector');
             expect(subject.spec.selector.matchLabels['app']).to.equal("application-deployment");
         })
 
         it('should correctly map deployment spec template', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.template.constructor.name).to.include('PodTemplateSpec');
         })
@@ -1036,8 +1022,6 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client persistent volume', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('PersistentVolume');
             expect(subject.kind).to.equal('PersistentVolume');
             expect(subject.apiVersion).to.equal('v1');
@@ -1046,15 +1030,11 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client persistent volume spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('PersistentVolumeSpec');
         })
 
         it('should correctly map persistent volume spec access modes ', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.accessModes)).to.equal(true);
             expect(subject.spec.accessModes[0]).to.equal('ReadWriteOnce');
@@ -1062,8 +1042,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map persistent volume spec aws elastic block store ', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.awsElasticBlockStore.constructor.name).to.include('AWSElasticBlockStoreVolumeSource');
             expect(subject.spec.awsElasticBlockStore.fsType).to.equal('type');
@@ -1074,8 +1052,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map persistent volume spec azure disk ', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.azureDisk.constructor.name).to.include('AzureDiskVolumeSource');
             expect(subject.spec.azureDisk.fsType).to.equal('type');
@@ -1088,8 +1064,6 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume spec azure file', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.azureFile.constructor.name).to.include('AzureFilePersistentVolumeSource');
             expect(subject.spec.azureFile.secretName).to.equal('secret-name');
             expect(subject.spec.azureFile.secretNamespace).to.equal('secret-namespace');
@@ -1100,15 +1074,11 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume spec capacity', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.capacity.storage).to.equal('8Gi');
         })
 
         it('should correctly map persistent volume spec cephfs', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.cephfs.constructor.name).to.include('CephFSPersistentVolumeSource');
             expect(Array.isArray(subject.spec.cephfs.monitors)).to.equal(true);
@@ -1127,8 +1097,6 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume spec cinder', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.cinder.constructor.name).to.include('CinderPersistentVolumeSource');
             expect(subject.spec.cinder.volumeID).to.equal('1');
             expect(subject.spec.cinder.fsType).to.equal('fs-type');
@@ -1141,8 +1109,6 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume spec claim reference', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.claimRef.constructor.name).to.include('ObjectReference');
             expect(subject.spec.claimRef.apiVersion).to.equal('v1');
             expect(subject.spec.claimRef.kind).to.equal('PersistentVolumeClaim');
@@ -1152,8 +1118,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map persistent volume spec csi', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.csi.constructor.name).to.include('CSIPersistentVolumeSource');
             expect(subject.spec.csi.driver).to.equal('dobs.csi.digitalocean.com');
@@ -1180,8 +1144,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map persistent volume spec fc', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.fc.constructor.name).to.include('FCVolumeSource');
             expect(subject.spec.fc.fsType).to.equal(parsedYaml.spec.fc.fsType);
@@ -1256,8 +1218,6 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client persistent volume claim', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('PersistentVolumeClaim');
             expect(subject.kind).to.equal('PersistentVolumeClaim');
             expect(subject.apiVersion).to.equal('v1');
@@ -1266,15 +1226,11 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume claim spec', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.constructor.name).to.include('PersistentVolumeClaimSpec');
         })
 
         it('should correctly map persistent volume claim spec access modes', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.spec.accessModes)).to.equal(true);
             expect(subject.spec.accessModes[0]).to.equal(parsedYaml.spec.accessModes[0]);
@@ -1283,16 +1239,12 @@ describe('k8s-manifest', () => {
         it('should correctly map persistent volume claim spec selector', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.selector.constructor.name).to.include('LabelSelector');
             expect(subject.spec.selector.matchLabels.app).to.equal(parsedYaml.spec.selector.matchLabels.app);
         })
 
         it('should correctly map persistent volume claim spec resources', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.spec.resources.constructor.name).to.include('ResourceRequirements');
             expect(subject.spec.resources.requests.storage).to.equal(parsedYaml.spec.resources.requests.storage);
@@ -1301,23 +1253,17 @@ describe('k8s-manifest', () => {
         it('should correctly map string fields', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.spec.storageClassName).to.equal(parsedYaml.spec.storageClassName);
         })
 
         it('should correctly map persistent volume claim status', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.status.constructor.name).to.include('PersistentVolumeClaimStatus');
         })
 
         it('should correctly map persistent volume claim status access modes', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.status.accessModes)).to.equal(true);
             expect(subject.status.accessModes[0]).to.equal(parsedYaml.status.accessModes[0]);
@@ -1347,8 +1293,6 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client secret', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('Secret');
             expect(subject.kind).to.equal('Secret');
             expect(subject.apiVersion).to.equal('v1');
@@ -1356,8 +1300,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map data', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.data.GRAPHQL_PATH).to.equal('/graphql');
             expect(subject.data.GRAPHQL_PORT).to.equal('4002');
@@ -1391,8 +1333,6 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client config map', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('ConfigMap');
             expect(subject.kind).to.equal('ConfigMap');
             expect(subject.apiVersion).to.equal('v1');
@@ -1400,8 +1340,6 @@ describe('k8s-manifest', () => {
 
         it('should correctly map data', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.data.GRAPHQL_PATH).to.equal('/graphql');
             expect(subject.data.GRAPHQL_PORT).to.equal('4002');
@@ -1446,15 +1384,11 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client metadata', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.metadata.constructor.name).to.include('ObjectMeta');
         })
 
         it('should correctly map annotations', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.metadata.annotations['deployment.kubernetes.io/revision']).to.equal(1);
             expect(subject.metadata.annotations['meta.helm.sh/release-name']).to.equal('v1');
@@ -1464,16 +1398,12 @@ describe('k8s-manifest', () => {
         it('should correctly map dates', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.metadata['creationTimestamp'].toISOString()).to.include('2022-03-08T15:46:18');
             expect(subject.metadata['creationTimestamp'].constructor.name).to.equal('Date');
         })
 
         it('should correctly map labels', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(subject.metadata.labels['app']).to.equal('application-label');
             expect(subject.metadata.labels['app.kubernetes.io/managed-by']).to.equal('Helm');
@@ -1482,23 +1412,17 @@ describe('k8s-manifest', () => {
         it('should correctly map name', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.metadata.name).to.equal('application-deployment');
         })
 
         it('should correctly map namespace', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.metadata.namespace).to.equal('development');
         })
 
         it('should correctly map owner references', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.metadata.ownerReferences)).to.equal(true);
             expect(subject.metadata.ownerReferences[0].constructor.name).to.include('OwnerReference');
@@ -1532,16 +1456,12 @@ describe('k8s-manifest', () => {
         it('should correctly map to k8s client role', () => {
             const subject = k8sManifest(parsedYaml);
 
-
-
             expect(subject.constructor.name).to.include('Role');
             expect(subject.apiVersion).to.equal('rbac.authorization.k8s.io/v1alpha1');
         })
 
         it('should correctly map rules', () => {
             const subject = k8sManifest(parsedYaml);
-
-
 
             expect(Array.isArray(subject.rules)).to.equal(true);
             expect(subject.rules[0].constructor.name).to.include('PolicyRule');

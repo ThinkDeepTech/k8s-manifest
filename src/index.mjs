@@ -1,1 +1,1 @@
-export {k8sManifest, stringify} from './k8s-manifest.mjs';
+export {k8sManifest, stringify, objectify} from './k8s-manifest.mjs';

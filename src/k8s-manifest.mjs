@@ -45,6 +45,13 @@ const stringify = (manifest) => {
     return k8s.dumpYaml(manifest);
 }
 
+const objectify = (manifest) => {
+
+    const yamlString = stringify(manifest);
+
+    return yaml.parse(yamlString);
+}
+
 const k8sClientObject = (typeName, value) => {
 
     if (clientObjectType(typeName)) {
@@ -163,4 +170,4 @@ const emptyMap = (map) => {
     return Object.keys(map).length === 0;
 }
 
-export { k8sManifest, stringify, k8sClientObject };
+export { k8sManifest, stringify, objectify, k8sClientObject };
