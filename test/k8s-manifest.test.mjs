@@ -7,39 +7,6 @@ describe('k8s-manifest', () => {
 
     describe('k8sManifest', () => {
 
-        /**
-
-            kind: APIGroup
-            apiVersion: v1
-            name: autoscaling
-            versions:
-            - groupVersion: autoscaling/v1
-                version: v1
-            - groupVersion: autoscaling/v2beta1
-                version: v2beta1
-            - groupVersion: autoscaling/v2beta2
-                version: v2beta2
-            preferredVersion:
-            groupVersion: autoscaling/v1
-            version: v1
-
-            **/
-
-            /**
-
-            kind: APIGroup
-            apiVersion: v1
-            name: flowcontrol.apiserver.k8s.io
-            versions:
-            - groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
-                version: v1beta1
-            preferredVersion:
-            groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
-            version: v1beta1
-
-
-            **/
-
         it('should correctly map objects requiring a prefix', () => {
             const parsedYaml = {
                 apiVersion: 'events.k8s.io/v1',
