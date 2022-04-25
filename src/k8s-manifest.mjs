@@ -36,13 +36,24 @@ const k8sManifest = (configuration) => {
     const kind = k8sKind(yamlConfig.kind);
 
     let objectType = `${version}${kind}`;
-    if (!clientObjectType(objectType)) {
-        const prefix = objectPrefix(yamlConfig.apiVersion);
-        objectType = `${prefix}${version}${kind}`;
-    }
-    const target = k8sClientObject(objectType, yamlConfig);
+    if (clientObjectType(objectType)) {
 
-    return target;
+        /** Do nothing */
+
+    } else if (clientObjectType(`${objectPrefix(yamlConfig.apiVersion)}${objectType}`)) {
+
+        objectType = `${objectPrefix(yamlConfig.apiVersion)}${objectType}`;
+
+    } else if (clientObjectType(`Core${objectType}`)) {
+
+        objectType = `Core${objectType}`;
+
+    } else {
+
+        throw new Error(`The kind ${yamlConfig.kind} couldn't be mapped to a corresponding type. Are you sure you spelled it correctly?`);
+    }
+
+    return k8sClientObject(objectType, yamlConfig);
 };
 
 /**
@@ -201,4 +212,4 @@ const emptyMap = (map) => {
     return Object.keys(map).length === 0;
 }
 
-export { k8sManifest, stringify, objectify, k8sClientObject, objectPrefix };
+export { k8sManifest, stringify, objectify, k8sClientObject, objectPrefix, clientObjectType };

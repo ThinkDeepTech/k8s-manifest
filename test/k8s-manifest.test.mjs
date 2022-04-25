@@ -1,11 +1,84 @@
 import chai, { assert } from 'chai';
 const expect = chai.expect;
 
-import {k8sManifest, k8sClientObject, objectify} from '../src/k8s-manifest.mjs';
+import {k8sManifest, k8sClientObject, objectify, objectPrefix} from '../src/k8s-manifest.mjs';
 
 describe('k8s-manifest', () => {
 
     describe('k8sManifest', () => {
+
+        /**
+
+            kind: APIGroup
+            apiVersion: v1
+            name: autoscaling
+            versions:
+            - groupVersion: autoscaling/v1
+                version: v1
+            - groupVersion: autoscaling/v2beta1
+                version: v2beta1
+            - groupVersion: autoscaling/v2beta2
+                version: v2beta2
+            preferredVersion:
+            groupVersion: autoscaling/v1
+            version: v1
+
+            **/
+
+            /**
+
+            kind: APIGroup
+            apiVersion: v1
+            name: flowcontrol.apiserver.k8s.io
+            versions:
+            - groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
+                version: v1beta1
+            preferredVersion:
+            groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
+            version: v1beta1
+
+
+            **/
+
+        it('should correctly map objects requiring a prefix', () => {
+            const parsedYaml = {
+                apiVersion: 'events.k8s.io/v1',
+                kind: 'Event',
+                metadata: {
+                    name: 'sample-event',
+                }
+            };
+
+            const actual = k8sManifest(parsedYaml);
+
+            expect(actual.constructor.name).to.equal('EventsV1Event');
+        })
+
+        it('should assume a prefix of core if an object with prefix is not found', () => {
+            const parsedYaml = {
+                apiVersion: 'v1',
+                kind: 'Event',
+                metadata: {
+                    name: 'sample-event',
+                }
+            };
+
+            const actual = k8sManifest(parsedYaml);
+
+            expect(actual.constructor.name).to.equal('CoreV1Event');
+        })
+
+        it('should throw an error no object type is found that matches the specifications', () => {
+            const parsedYaml = {
+                apiVersion: 'v1',
+                kind: 'RandomObjectName',
+                metadata: {
+                    name: 'sample',
+                }
+            };
+
+            expect(() => k8sManifest(parsedYaml) ).to.throw();
+        })
 
         it('should correctly parse yaml strings into the associated object', () => {
 
@@ -1475,47 +1548,18 @@ describe('k8s-manifest', () => {
     })
 
     describe('objectPrefix', () => {
-        // TODO
-        /**
-            kind: APIGroup
-            apiVersion: v1
-            name: events.k8s.io
-            versions:
-            - groupVersion: events.k8s.io/v1
-                version: v1
-            - groupVersion: events.k8s.io/v1beta1
-                version: v1beta1
-            preferredVersion:
-            groupVersion: events.k8s.io/v1
-            version: v1
 
+        it('should correctly map versions with one entry before .k8s.io', () => {
+            expect(objectPrefix('events.k8s.io/v1')).to.equal('Events');
+        })
 
-            kind: APIGroup
-            apiVersion: v1
-            name: autoscaling
-            versions:
-            - groupVersion: autoscaling/v1
-                version: v1
-            - groupVersion: autoscaling/v2beta1
-                version: v2beta1
-            - groupVersion: autoscaling/v2beta2
-                version: v2beta2
-            preferredVersion:
-            groupVersion: autoscaling/v1
-            version: v1
+        it('should correctly map versions that have no period', () => {
+            expect(objectPrefix('autoscaling/v2beta1')).to.equal('Autoscaling');
+        })
 
-            kind: APIGroup
-            apiVersion: v1
-            name: flowcontrol.apiserver.k8s.io
-            versions:
-            - groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
-                version: v1beta1
-            preferredVersion:
-            groupVersion: flowcontrol.apiserver.k8s.io/v1beta1
-            version: v1beta1
-
-
-            **/
+        it('should correctly map versions that have multiple periods before .k8s.io', () => {
+            expect(objectPrefix('flowcontrol.apiserver.k8s.io/v1beta1')).to.equal('FlowcontrolApiserver');
+        })
     })
 
 })
