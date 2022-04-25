@@ -11,6 +11,10 @@ import yaml from "yaml";
  */
 const k8sManifest = (configuration) => {
 
+    if (clientObjectType(configuration.constructor.name)) {
+        return configuration;
+    }
+
     let yamlConfig = configuration;
     if ((typeof configuration === 'string')) {
         yamlConfig = yaml.parse(configuration);
@@ -28,9 +32,15 @@ const k8sManifest = (configuration) => {
         throw new Error(`The kind needs to be set to be considered a valid k8s manifest.`);
     }
 
-    const objectPrefix = objectVersion(yamlConfig.apiVersion);
-    const objectKind = k8sKind(yamlConfig.kind);
-    const target = k8sClientObject(`${objectPrefix}${objectKind}`, yamlConfig);
+    const version = objectVersion(yamlConfig.apiVersion);
+    const kind = k8sKind(yamlConfig.kind);
+
+    let objectType = `${version}${kind}`;
+    if (!clientObjectType(objectType)) {
+        const prefix = objectPrefix(yamlConfig.apiVersion);
+        objectType = `${prefix}${version}${kind}`;
+    }
+    const target = k8sClientObject(objectType, yamlConfig);
 
     return target;
 };
@@ -45,6 +55,12 @@ const stringify = (manifest) => {
     return k8s.dumpYaml(manifest);
 }
 
+/**
+ * Convert a kubernetes javascript client object to a regular javascript object.
+ *
+ * @param {any} manifest The kubernetes javascript client object.
+ * @returns Standard javascript object representation of the kubernetes javascript client object.
+ */
 const objectify = (manifest) => {
 
     const yamlString = stringify(manifest);
@@ -154,6 +170,21 @@ const handleClientObjectType = (typeName, value) => {
     return subject;
 }
 
+const objectPrefix = (apiVersion) => {
+    const apiPart = apiVersion.split('/')[0];
+    const apiComponents = apiPart.split('.');
+
+    /**
+     * The convention seems to include ending with .k8s.io which is why we subtract 2.
+     */
+    let prefix = capitalizeFirstLetter(apiComponents[0]);
+    for (let i = 1; i < apiComponents.length - 2; i++) {
+        prefix = prefix.concat( capitalizeFirstLetter(apiComponents[i]) );
+    }
+
+    return prefix;
+}
+
 const objectVersion = (apiVersion) => {
     if (!apiVersion.includes('/')) {
         return capitalizeFirstLetter(apiVersion);
@@ -170,4 +201,4 @@ const emptyMap = (map) => {
     return Object.keys(map).length === 0;
 }
 
-export { k8sManifest, stringify, objectify, k8sClientObject };
+export { k8sManifest, stringify, objectify, k8sClientObject, objectPrefix };
