@@ -1,5 +1,5 @@
 # Lock files
-package-lock.json
+*-lock.json
 yarn.lock
 
 # Logs
