@@ -1,6 +1,6 @@
 {
   "name": "@thinkdeep/k8s-manifest",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Simple interface providing kubernetes javascript client object creation by use of yaml strings or objects.",
   "main": "src/index.mjs",
   "repository": "git@github.com:ThinkDeepTech/k8s-manifest.git",
