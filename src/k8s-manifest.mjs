@@ -24,10 +24,6 @@ const k8sManifest = (configuration) => {
         yamlConfig = yaml.parse(configuration);
     }
 
-    if (!yamlConfig?.apiVersion) {
-        yamlConfig.apiVersion = yamlConfig.groupVersion;
-    }
-
     if (!yamlConfig.apiVersion) {
         throw new Error(`The api version needs to be set to be considered a valid k8s manifest.`);
     }
@@ -54,7 +50,7 @@ const k8sManifest = (configuration) => {
 
     } else {
 
-        throw new Error(`The kind ${yamlConfig.kind} mapped to ${objectType} and couldn't be mapped to a corresponding client object type. Are you sure you spelled it correctly?`);
+        throw new Error(`The kind ${yamlConfig.kind} mapped to ${objectType} and couldn't be mapped to a corresponding client object type.`);
     }
 
     return k8sClientObject(objectType, yamlConfig);
