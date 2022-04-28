@@ -24,6 +24,10 @@ const k8sManifest = (configuration) => {
         yamlConfig = yaml.parse(configuration);
     }
 
+    if (!yamlConfig?.apiVersion) {
+        yamlConfig.apiVersion = yamlConfig.groupVersion;
+    }
+
     if (!yamlConfig.apiVersion) {
         throw new Error(`The api version needs to be set to be considered a valid k8s manifest.`);
     }
