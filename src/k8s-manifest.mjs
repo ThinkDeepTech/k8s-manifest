@@ -11,6 +11,10 @@ import yaml from "yaml";
  */
 const k8sManifest = (configuration) => {
 
+    if (!configuration) {
+        throw new Error(`The configuration must be defined.`);
+    }
+
     if (clientObjectType(configuration.constructor.name)) {
         return configuration;
     }
@@ -50,7 +54,7 @@ const k8sManifest = (configuration) => {
 
     } else {
 
-        throw new Error(`The kind ${yamlConfig.kind} couldn't be mapped to a corresponding type. Are you sure you spelled it correctly?`);
+        throw new Error(`The kind ${yamlConfig.kind} mapped to ${objectType} and couldn't be mapped to a corresponding client object type. Are you sure you spelled it correctly?`);
     }
 
     return k8sClientObject(objectType, yamlConfig);
