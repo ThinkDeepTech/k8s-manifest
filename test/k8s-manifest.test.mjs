@@ -107,7 +107,7 @@ describe('k8s-manifest', () => {
         it('should correctly map api resource list objects when supplied as configuration', () => {
             const configuration = {
                 "kind":"APIResourceList",
-                "groupVersion":"v1",
+                "apiVersion":"v1",
                 "resources":[{
                     "name":"bindings",
                     "singularName":"",
