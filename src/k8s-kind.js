@@ -32,13 +32,12 @@ const k8sKind = (prospectiveKind) => {
 };
 
 const removeVersion = (constructorName) => {
-  const matches = constructorName.match(/[A-Za-z]+(?!\d+)(?=[A-Za-z]*$)/);
-
-  if (!matches) {
+  const indexLastNumber = constructorName.search(/\d+(?=[A-Za-z]+$)/);
+  if (indexLastNumber < 0) {
     return constructorName;
   }
 
-  return matches[0];
+  return constructorName.slice(indexLastNumber + 1);
 };
 
 export {k8sKind};
