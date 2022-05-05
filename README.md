@@ -1,4 +1,7 @@
-# k8s-manifest
+# @thinkdeep/k8s-manifest
+[![CircleCI](https://circleci.com/gh/ThinkDeepTech/k8s-manifest.svg?style=shield)](https://circleci.com/gh/ThinkDeepTech/k8s-manifest)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ThinkDeepTech_k8s-manifest&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ThinkDeepTech_k8s-manifest)
+
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or objects.
 
 # Dependencies
