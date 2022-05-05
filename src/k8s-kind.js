@@ -34,15 +34,10 @@ const k8sKind = (prospectiveKind) => {
 const removeVersion = (constructorName) => {
   if (!constructorName) return constructorName;
 
-  const indexLastNumber = lastInteger(constructorName);
-  if (indexLastNumber < 0) {
-    return constructorName;
-  }
-
-  return constructorName.slice(indexLastNumber + 1);
+  return constructorName.slice(lastIntegerIndex(constructorName) + 1);
 };
 
-const lastInteger = (str) => {
+const lastIntegerIndex = (str) => {
   const subject = str.trim();
 
   let lastIndex = -1;
