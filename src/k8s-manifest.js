@@ -1,6 +1,6 @@
 import k8s from '@kubernetes/client-node';
-import {capitalizeFirstLetter} from './capitalize-first-letter.mjs';
-import {k8sKind} from './k8s-kind.mjs';
+import {capitalizeFirstLetter} from './capitalize-first-letter.js';
+import {k8sKind} from './k8s-kind.js';
 import yaml from 'yaml';
 
 /**

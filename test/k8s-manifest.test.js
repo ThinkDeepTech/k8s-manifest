@@ -5,7 +5,7 @@ import {
   k8sClientObject,
   objectify,
   objectPrefix,
-} from '../src/k8s-manifest.mjs';
+} from '../src/k8s-manifest.js';
 const expect = chai.expect;
 
 describe('k8s-manifest', () => {
