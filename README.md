@@ -5,7 +5,7 @@
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or plain javascript objects.
 
 # Dependencies
-- [Kubernetes javascript client](https://github.com/kubernetes-client/javascript) v0.15
+- Tested on [Kubernetes javascript client v0.15](https://github.com/kubernetes-client/javascript) (Based on conventions within this API I think it could work with multiple versions but that hasn't been verified)
 - [Node v16.14.2 LTS](https://nodejs.org/en/)
 
 # Installation
