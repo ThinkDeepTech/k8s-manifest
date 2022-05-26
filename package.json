@@ -9,12 +9,13 @@
   "type": "module",
   "scripts": {
     "lint": "eslint --fix ./**/*.js",
-    "tests": "mocha ./test/**/*.test.js ./test/*.test.js"
+    "tests": "c8 --clean mocha ./test/**/*.test.js ./test/*.test.js",
+    "tests:coverage:publish": "npm run tests && cat ./coverage/lcov.info | coveralls"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
-      "pre-push": "yarn run tests"
+      "pre-push": "npm run tests"
     }
   },
   "lint-staged": {
@@ -28,7 +29,9 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
+    "c8": "^7.11.3",
     "chai": "^4.3.4",
+    "coveralls": "^3.1.1",
     "eslint": "^8.14.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.5.0",
