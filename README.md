@@ -1,6 +1,10 @@
 # @thinkdeep/k8s-manifest
 [![CircleCI](https://circleci.com/gh/ThinkDeepTech/k8s-manifest.svg?style=shield)](https://circleci.com/gh/ThinkDeepTech/k8s-manifest)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ThinkDeepTech_k8s-manifest&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ThinkDeepTech_k8s-manifest)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ThinkDeepTech_k8s-manifest&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ThinkDeepTech_k8s-manifest)
+[![Coverage Status](https://coveralls.io/repos/github/ThinkDeepTech/k8s-manifest/badge.svg?branch=main)](https://coveralls.io/github/ThinkDeepTech/k8s-manifest?branch=main)
+[![Maintainability](https://api.codeclimate.com/v1/badges/458b63430e97d9571867/maintainability)](https://codeclimate.com/github/ThinkDeepTech/k8s-manifest/maintainability)
+[![Vulnerabilities](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main/badge.svg)](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main)
 
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or plain javascript objects.
 
