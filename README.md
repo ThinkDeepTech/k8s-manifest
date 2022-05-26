@@ -5,6 +5,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ThinkDeepTech/k8s-manifest/badge.svg?branch=main)](https://coveralls.io/github/ThinkDeepTech/k8s-manifest?branch=main)
 [![Maintainability](https://api.codeclimate.com/v1/badges/458b63430e97d9571867/maintainability)](https://codeclimate.com/github/ThinkDeepTech/k8s-manifest/maintainability)
 [![Vulnerabilities](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main/badge.svg)](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main)
+[![Contact](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/haydenmcp/)
 
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or plain javascript objects.
 
