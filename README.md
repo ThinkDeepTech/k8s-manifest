@@ -5,8 +5,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/ThinkDeepTech/k8s-manifest/badge.svg?branch=main)](https://coveralls.io/github/ThinkDeepTech/k8s-manifest?branch=main)
 [![Maintainability](https://api.codeclimate.com/v1/badges/458b63430e97d9571867/maintainability)](https://codeclimate.com/github/ThinkDeepTech/k8s-manifest/maintainability)
 [![Vulnerabilities](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main/badge.svg)](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main)
-[![Linkedin](https://i.stack.imgur.com/gVE0j.png = 200x)](https://www.linkedin.com/in/haydenmcp)
-[![GitHub](https://i.stack.imgur.com/tskMh.png = 200x)](https://github.com/haydenmcp)
+[![Linkedin](https://i.stack.imgur.com/gVE0j.png)](https://www.linkedin.com/in/haydenmcp/)
+[![GitHub](https://i.stack.imgur.com/tskMh.png)](https://github.com/haydenmcp)
+[<img src="https://i.stack.imgur.com/gVE0j.png" height="200" width="200">](https://www.linkedin.com/in/haydenmcp/)
+[<img src="https://i.stack.imgur.com/tskMh.png" height="200" width="200">](https://github.com/haydenmcp)
 
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or plain javascript objects.
 
