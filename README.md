@@ -7,8 +7,8 @@
 [![Vulnerabilities](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main/badge.svg)](https://snyk.io/test/github/ThinkDeepTech/k8s-manifest/main)
 [![Linkedin](https://i.stack.imgur.com/gVE0j.png)](https://www.linkedin.com/in/haydenmcp/)
 [![GitHub](https://i.stack.imgur.com/tskMh.png)](https://github.com/haydenmcp)
-[<img src="https://i.stack.imgur.com/gVE0j.png" height="200" width="200">](https://www.linkedin.com/in/haydenmcp/)
-[<img src="https://i.stack.imgur.com/tskMh.png" height="200" width="200">](https://github.com/haydenmcp)
+[<img src="https://i.stack.imgur.com/gVE0j.png" height="20" width="20">](https://www.linkedin.com/in/haydenmcp/)
+[<img src="https://i.stack.imgur.com/tskMh.png" height="20" width="20">](https://github.com/haydenmcp)
 
 Simple interface providing kubernetes javascript client object creation by use of yaml strings or plain javascript objects.
 
