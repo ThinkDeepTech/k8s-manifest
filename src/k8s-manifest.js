@@ -79,6 +79,7 @@ const objectify = (manifest) => {
 };
 
 const k8sClientObject = (typeName, value) => {
+  console.log(`Handling type ${typeName}`);
   if (clientObjectType(typeName)) {
     return handleClientObjectType(typeName, value);
   } else if (arrayType(typeName)) {
