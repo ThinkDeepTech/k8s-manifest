@@ -79,7 +79,6 @@ const objectify = (manifest) => {
 };
 
 const k8sClientObject = (typeName, value) => {
-  console.log(`Handling type ${typeName}`);
   if (clientObjectType(typeName)) {
     return handleClientObjectType(typeName, value);
   } else if (arrayType(typeName)) {
@@ -133,6 +132,8 @@ const attributeTypeMap = (typeName, attributeName) => {
 const handleArrayType = (typeName, value) => {
   const subject = [];
 
+  console.log(`Handling array type ${typeName}`);
+
   const elementType = typeName.match(/(?<=Array<)(.*?)(?=>)/)[0];
 
   if (!elementType) {
@@ -147,6 +148,8 @@ const handleArrayType = (typeName, value) => {
 };
 
 const handleMap = (typeName, value) => {
+  console.log(`Handling map type ${typeName}`);
+
   const subject = {};
 
   const propertyType = typeName.match(/(?<=\{ \[key: \w+\]: )(.*?)(?=; \})/)[0];
@@ -161,6 +164,7 @@ const handleMap = (typeName, value) => {
 };
 
 const handleClientObjectType = (typeName, value) => {
+  console.log(`Handling client type ${typeName}`);
   const subject = new k8s[typeName]();
 
   for (const attribute in value) {
