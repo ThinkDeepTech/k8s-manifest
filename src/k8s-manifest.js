@@ -132,8 +132,6 @@ const attributeTypeMap = (typeName, attributeName) => {
 const handleArrayType = (typeName, value) => {
   const subject = [];
 
-  console.log(`Handling array type ${typeName}`);
-
   const elementType = typeName.match(/(?<=Array<)(.*?)(?=>)/)[0];
 
   if (!elementType) {
@@ -148,8 +146,6 @@ const handleArrayType = (typeName, value) => {
 };
 
 const handleMap = (typeName, value) => {
-  console.log(`Handling map type ${typeName}`);
-
   const subject = {};
 
   const propertyType = typeName.match(/(?<=\{ \[key: \w+\]: )(.*?)(?=; \})/)[0];
